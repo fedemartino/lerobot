@@ -206,17 +206,44 @@ class SOFollower(Robot):
         Returns:
             RobotAction: the action sent to the motors, potentially clipped.
         """
-
-        goal_pos = {key.removesuffix(".pos"): val for key, val in action.items() if key.endswith(".pos")}
+        #logger.info(f"{self} sending action: {action}")
+        for key in action:
+            if key.startswith("delta"):
+                flagDelta = True
+                break
+        else:
+            flagDelta = False
+        if flagDelta:
+            # Convert delta action to absolute goal position
+            present_pos = self.bus.sync_read("Present_Position")
+            for key, val in action.items():
+                if val != 0 and key != "delta_gripper":
+                    logger.info(f"{self} received delta action: {key} with value {val}")
+            #logger.info(f"{self} present position: {present_pos}")
+            #replDict ={'x': 'shoulder_pan','y': 'elbow_flex', 'z': 'shoulder_lift', 'gripper': 'gripper'}
+            goal_pos = {
+                #replace x, y, z with 1, 2, 3, and remove "delta_" prefix to get corresponding motor name for present position reading
+                key.removeprefix("delta_"): present_pos[key.removeprefix("delta_")] + val for key, val in action.items()  
+                # replDict[key.removeprefix("delta_")]: present_pos[replDict[key.removeprefix("delta_")]] + val for key, val in action.items()                
+            }
+            #logger.info(f"{self} goal position before capping: {goal_pos}")
+            #if key not in self.action_features:
+            #    raise ValueError(f"Invalid action key: {key}. Must be one of {list(self.action_features.keys())}")
+        else:
+            goal_pos = {key.removesuffix(".pos"): val for key, val in action.items() if key.endswith(".pos")}
 
         # Cap goal position when too far away from present position.
         # /!\ Slower fps expected due to reading from the follower.
         if self.config.max_relative_target is not None:
+            logger.info(f"{self} capping goal position with max_relative_target: {self.config.max_relative_target}")
             present_pos = self.bus.sync_read("Present_Position")
             goal_present_pos = {key: (g_pos, present_pos[key]) for key, g_pos in goal_pos.items()}
             goal_pos = ensure_safe_goal_position(goal_present_pos, self.config.max_relative_target)
 
         # Send goal position to the arm
+
+        #logger.info(f"{self} sending action: {action}")
+        #logger.info(f"{self} sending goal position: {goal_pos}")
         self.bus.sync_write("Goal_Position", goal_pos)
         return {f"{motor}.pos": val for motor, val in goal_pos.items()}
 
