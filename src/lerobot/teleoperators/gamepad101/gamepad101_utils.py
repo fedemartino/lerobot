@@ -235,12 +235,15 @@ class GamepadController(InputController):
         logging.info(f"Initialized gamepad: {self.joystick.get_name()}")
 
         print("Gamepad controls:")
-        print("  Left analog stick: Move in X-Y plane")
-        print("  Right analog stick (vertical): Move in Z axis")
-        print("  B/Circle button: Exit")
-        print("  Y/Triangle button: End episode with SUCCESS")
-        print("  A/Cross button: End episode with FAILURE")
-        print("  X/Square button: Rerecord episode")
+        print("  Left analog stick: Move shoulder pan and lift")
+        print("  Right analog stick (vertical): Move elbow flex")
+        print("  Right analog stick (horizontal): Move wrist roll")
+        print("  DPad up/down: Move wrist flex")
+        print("  Right and Left trigger: Open / Close gripper")
+        #print("  B/Circle button: Exit")
+        #print("  Y/Triangle button: End episode with SUCCESS")
+        #print("  A/Cross button: End episode with FAILURE")
+        #print("  X/Square button: Rerecord episode")
 
     def stop(self):
         """Clean up pygame resources."""
@@ -254,7 +257,7 @@ class GamepadController(InputController):
         """Process pygame events to get fresh gamepad readings."""
         #logging.info("x axis:" + str(self.joystick.get_axis(0)) + " y axis:" + str(self.joystick.get_axis(1)) + " z axis:" + str(self.joystick.get_axis(3)))
         for event in pygame.event.get():
-            logging.info(f"Received pygame event: {event}")
+            #logging.info(f"Received pygame event: {event}")
             if event.type == pygame.JOYBUTTONDOWN:
                 if event.button == 3:
                     self.episode_end_status = TeleopEvents.SUCCESS
