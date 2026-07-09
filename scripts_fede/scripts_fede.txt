@@ -1,0 +1,115 @@
+lerobot-teleoperate \
+    --robot.type=so101_follower \
+    --robot.port=/dev/ttyACM0 \
+    --teleop.type=gamepad 
+
+lerobot-calibrate \
+    --robot.type=so101_follower \
+    --robot.port=/dev/ttyACM0
+    --robot.id=my_awesome_follower_arm
+
+lerobot-teleoperate \
+    --robot.type=so101_follower \
+    --robot.port=/dev/ttyACM1 \
+    --robot.id=my_awesome_follower_arm \
+    --teleop.type=gamepad101 
+
+lerobot-calibrate \
+    --teleop.type=so101_leader \
+    --teleop.port=/dev/tty.usbmodem58760431551 \ # <- The port of your robot
+    --teleop.id=my_awesome_leader_arm # <- Give the robot a unique name
+
+lerobot-calibrate \
+    --teleop.type=so101_leader \
+    --teleop.port=/dev/ttyACM1 --teleop.id=my_awesome_leader_arm 
+
+lerobot-setup-motors \
+    --teleop.type=so101_leader \
+    --teleop.port=/dev/ttyACM1
+
+lerobot-teleoperate \
+    --robot.type=so101_follower \
+    --robot.port=/dev/ttyACM0 \
+    --robot.id=my_awesome_follower_arm \
+    --teleop.type=so101_leader \
+    --teleop.port=/dev/ttyACM1 \
+    --teleop.id=my_awesome_leader_arm
+
+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
+    /dev/ttyACM1
+
+INFO 2026-06-17 21:57:43 follower.py:219 my_awesome_follower_arm SOFollower present position: {
+'shoulder_pan': 24.395604395604394, 
+'shoulder_lift': -101.71428571428571, 
+'elbow_flex': 97.58241758241758, 
+'wrist_flex': 39.252747252747255, 
+'wrist_roll': -0.13186813186813187,
+'gripper': 27.57679180887372}
+
+ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+isaacsim-kernel 5.1.0.0 requires psutil==5.9.8, but you have psutil 7.2.2 which is incompatible.
+isaacsim-kernel 5.1.0.0 requires typing_extensions==4.12.2, but you have typing-extensions 4.15.0 which is incompatible.
+fastapi 0.115.7 requires starlette<0.46.0,>=0.40.0, but you have starlette 0.49.1 which is incompatible.
+
+
+lerobot-record \
+    --robot.type=so101_follower \
+    --robot.port=/dev/ttyACM0 \
+    --robot.id=my_awesome_follower_arm \
+    --robot.cameras="{ front: {type: opencv, index_or_path: 4, width: 1280, height: 720, fps: 30},top: {type: opencv, index_or_path: 2, width: 1920, height: 1080, fps: 30}}" \
+    --teleop.type=so101_leader \
+    --teleop.port=/dev/ttyACM1 \
+    --teleop.id=my_awesome_leader_arm \
+    --display_data=true \
+    --dataset.repo_id=${HF_USER}/record-test \
+    --dataset.num_episodes=5 \
+    --dataset.single_task="Grab the green lego" \
+    --dataset.streaming_encoding=true \
+    --dataset.encoder_threads=2
+
+lerobot-teleoperate \
+    --robot.type=so101_follower \
+    --robot.port=/dev/ttyACM1 \
+    --robot.id=my_awesome_follower_arm \
+    --robot.cameras="{ front: {type: opencv, index_or_path: 4, width: 640, height: 480, fps: 30},top: {type: opencv, index_or_path: 2, width: 640, height: 480, fps: 30}}" \
+    --teleop.type=so101_leader \
+    --teleop.port=/dev/ttyACM0 \
+    --teleop.id=my_awesome_leader_arm \
+    --display_data=true 
+
+lerobot-record \
+    --robot.type=so101_follower \
+    --robot.port=/dev/ttyACM1 \
+    --robot.id=my_awesome_follower_arm \
+    --robot.cameras="{ front: {type: opencv, index_or_path: 4, width: 640, height: 480, fps: 30},top: {type: opencv, index_or_path: 2, width: 640, height: 480, fps: 30}}" \
+    --teleop.type=so101_leader \
+    --teleop.port=/dev/ttyACM0 \
+    --teleop.id=my_awesome_leader_arm \
+    --display_data=true \
+    --dataset.repo_id=fedemartino/record-test-50 \
+    --dataset.num_episodes=50 \
+    --dataset.single_task="Grab the green lego" \
+    --dataset.streaming_encoding=true \
+    --dataset.encoder_threads=4
+
+lerobot-train \
+  --dataset.repo_id=fedemartino/record-test-50_20260708_212337 \
+  --policy.type=act \
+  --output_dir=outputs/train/act_so101_test_50 \
+  --job_name=act_so101_test_50 \
+  --policy.device=cuda \
+  --wandb.enable=true \
+  --policy.repo_id=fedemartino/my_policy_50
+
+lerobot-rollout \
+  --strategy.type=base \
+  --robot.id=my_awesome_follower_arm \
+  --policy.path=fedemartino/my_policy_50 \
+  --robot.type=so101_follower \
+  --robot.port=/dev/ttyACM1 \
+  --robot.cameras="{ front: {type: opencv, index_or_path: 4, width: 640, height: 480, fps: 30},top: {type: opencv, index_or_path: 2, width: 640, height: 480, fps: 30}}" \
+  --task="Grab the green lego" \
+  --duration=120
+
+
+
