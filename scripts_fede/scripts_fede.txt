@@ -69,47 +69,75 @@ lerobot-record \
 
 lerobot-teleoperate \
     --robot.type=so101_follower \
-    --robot.port=/dev/ttyACM1 \
+    --robot.port=/dev/ttyACM0 \
     --robot.id=my_awesome_follower_arm \
     --robot.cameras="{ front: {type: opencv, index_or_path: 4, width: 640, height: 480, fps: 30},top: {type: opencv, index_or_path: 2, width: 640, height: 480, fps: 30}}" \
     --teleop.type=so101_leader \
-    --teleop.port=/dev/ttyACM0 \
+    --teleop.port=/dev/ttyACM1 \
     --teleop.id=my_awesome_leader_arm \
     --display_data=true 
 
+lerobot-teleoperate \
+    --robot.type=so101_follower \
+    --robot.port=/dev/ttyACM0 \
+    --robot.id=my_awesome_follower_arm \
+    --teleop.type=so101_leader \
+    --teleop.port=/dev/ttyACM1 \
+    --teleop.id=my_awesome_leader_arm \
+    --display_data=true
+
 lerobot-record \
     --robot.type=so101_follower \
-    --robot.port=/dev/ttyACM1 \
+    --robot.port=/dev/ttyACM0 \
     --robot.id=my_awesome_follower_arm \
     --robot.cameras="{ front: {type: opencv, index_or_path: 4, width: 640, height: 480, fps: 30},top: {type: opencv, index_or_path: 2, width: 640, height: 480, fps: 30}}" \
     --teleop.type=so101_leader \
-    --teleop.port=/dev/ttyACM0 \
+    --teleop.port=/dev/ttyACM1 \
     --teleop.id=my_awesome_leader_arm \
     --display_data=true \
-    --dataset.repo_id=fedemartino/record-test-50 \
-    --dataset.num_episodes=50 \
+    --dataset.repo_id=fedemartino/record-test-50-v2 \
+    --dataset.num_episodes=1 \
     --dataset.single_task="Grab the green lego" \
     --dataset.streaming_encoding=true \
     --dataset.encoder_threads=4
+    --resume=true
 
 lerobot-train \
-  --dataset.repo_id=fedemartino/record-test-50_20260708_212337 \
+  --dataset.repo_id=fedemartino/merged_131 \
   --policy.type=act \
-  --output_dir=outputs/train/act_so101_test_50 \
-  --job_name=act_so101_test_50 \
+  --output_dir=outputs/train/act_so101_green_lego_131 \
+  --job_name=act_so101_green_lego_131 \
   --policy.device=cuda \
   --wandb.enable=true \
-  --policy.repo_id=fedemartino/my_policy_50
+  --policy.repo_id=fedemartino/green_lego_policy_131
 
 lerobot-rollout \
   --strategy.type=base \
   --robot.id=my_awesome_follower_arm \
-  --policy.path=fedemartino/my_policy_50 \
+  --policy.path=fedemartino/green_lego_policy_131 \
   --robot.type=so101_follower \
-  --robot.port=/dev/ttyACM1 \
+  --robot.port=/dev/ttyACM0 \
   --robot.cameras="{ front: {type: opencv, index_or_path: 4, width: 640, height: 480, fps: 30},top: {type: opencv, index_or_path: 2, width: 640, height: 480, fps: 30}}" \
   --task="Grab the green lego" \
   --duration=120
 
 
+lerobot-edit-dataset \
+    --new_repo_id fedemartino/merged_130 \
+    --operation.type merge \
+    --operation.repo_ids "['fedemartino/record-test-50-v2_20260709_201148', 'fedemartino/record-test_20260708_135805', 'fedemartino/record-test-50_20260708_212337']"
+
+lerobot-edit-dataset \
+    --new_repo_id fedemartino/merged_131 \
+    --operation.type merge \
+    --operation.repo_ids "['fedemartino/record-test-50-v2_20260709_194925', 'fedemartino/merged_130']"
+
+lerobot-edit-dataset \
+    --repo_id fedemartino/merged_131 \
+    --operation.type info
+
+lerobot-edit-dataset \
+    --repo_id fedemartino/record-test-50-v2_20260709_194925 \
+    --operation.type info
+hf upload fedemartino/merged_131 ~/.cache/huggingface/lerobot/fedemartino --repo-type dataset
 
